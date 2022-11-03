@@ -4,6 +4,9 @@
 #include "Core/Utils/RobotDefs.h"
 #include "Core/Utils/CartesianCoord.h"
 
+float headAngleY = 0;
+float headAngleX = 0;
+
 TraineeRole2::TraineeRole2(SpellBook *spellBook) : Role(spellBook)
 {
     onStart = false;
@@ -44,10 +47,29 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
     {
         cout << "na role trainee2, " << endl;
 
+        if(!spellBook->perception.vision.ball.BallDetected) {
+            spellBook->motion.Vx = 0.0;
+            spellBook->motion.HeadPitch = Deg2Rad(headAngleY);
+
+            headAngleY++;
+
+            if(headAngleY == 12) {
+                spellBook->motion.HeadPitch = Deg2Rad(headAngleY / 2);
+                spellBook->motion.HeadYaw = Deg2Rad(headAngleX);
+                headAngleX += 0.1;
+            }
+
+        } else {
+            spellBook->motion.Vx = 0.15;
+        }
+
+        
+
         /*
         Os slides do trainee falam que o robô vai ser testado com a bola em distância curta, média, longa e atrás dele, teóricamente esse código cobre tudo isso, vamo testando e arrumando até ir
         */
 
+    /*
         //Se enxergar a bola
         if(spellBook->perception.vision.ball.BallDetected){
             //Enquanto a distancia do robô até a bola for maior do 0 (provavelmente vamos ter que mudar de 0 para compensar o fato de a medição ser feita a partir da câmera na cabeça dele)
@@ -81,6 +103,7 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
                 spellBook->motion.Vth = Deg2Rad(25); //Velocidade arbitrária, vamos testar uma mais otimizada.
             }
         }
+        */
         
 
         // informacoes disponiveis:
@@ -91,5 +114,6 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
             // spellBook->perception.vision.ball.BallYaw > Deg2Rad(10.0f) // ANGULACAO DA BOLA EM X
             //spellBook->motion.HeadPitch = Deg2Rad(24.0f); // ANGULACAO DA CABECA DO ROBO, POSITIVO O ROBO OLHA PRA BAIXO, NEGATIVO PRA CIMA
             // spellBook->motion.HeadPitch = Deg2Rad(24.0f); // OLHA PRA BAIXO
+            //Tamanho = 57.3cm
     }
 }
