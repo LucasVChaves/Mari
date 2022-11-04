@@ -66,6 +66,7 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
             } else {
                 //Gira o NAO em torno do próprio eixo para procurar atrás
                 spellBook->motion.Vth = 0.5;
+                ciclos = 0;
             }
             
 
