@@ -4,8 +4,7 @@
 #include "Core/Utils/RobotDefs.h"
 #include "Core/Utils/CartesianCoord.h"
 
-float headAngleY = 0;
-float headAngleX = 0;
+float headAngleX1 = 0, headAngleX2 = 0;
 
 TraineeRole2::TraineeRole2(SpellBook *spellBook) : Role(spellBook)
 {
@@ -49,18 +48,25 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
 
         if(!spellBook->perception.vision.ball.BallDetected) {
             spellBook->motion.Vx = 0.0;
-            spellBook->motion.HeadPitch = Deg2Rad(headAngleY);
+            spellBook->motion.HeadPitch = Deg2Rad(12);
+            
+            //Procurar a Bola no eixo X
+            spellBook->motion.HeadYaw = Deg2Rad(headAngleX1);
+            headAngleX1 += 5;
 
-            headAngleY++;
-
-            if(headAngleY == 12) {
-                spellBook->motion.HeadPitch = Deg2Rad(headAngleY / 2);
-                spellBook->motion.HeadYaw = Deg2Rad(headAngleX);
-                headAngleX += 0.1;
+            if(headAngleX1 >= 20) {
+                spellBook->motion.HeadYaw = Deg2Rad(headAngleX2);
+                headAngleX2 -= 5;
             }
+            
 
         } else {
+            // Anda em linha reta e reseta os ângulos da cabeça
+            /*
             spellBook->motion.Vx = 0.15;
+            spellBook->motion.HeadPitch = Deg2Rad(12);
+            spellBook->motion.HeadYaw = Deg2Rad(0);
+            */
         }
 
         
