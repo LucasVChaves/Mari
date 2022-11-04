@@ -4,8 +4,14 @@
 #include "Core/Utils/RobotDefs.h"
 #include "Core/Utils/CartesianCoord.h"
 
+#define MAX_ANGLE 12
+#define HEAD_PITCH 15
+#define NUM_CICLES 2000
+
 float headAngleX1 = 0, headAngleX2 = 0;
-int ciclos = 0;
+int cicles = 0;
+bool flag = true;
+
 
 TraineeRole2::TraineeRole2(SpellBook *spellBook) : Role(spellBook)
 {
@@ -18,8 +24,8 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
 {
     spellBook->strategy.MoveHead = false;
     spellBook->motion.HeadYaw = 0;
-    spellBook->motion.HeadSpeedYaw = 0.2f;
-    spellBook->motion.HeadSpeedPitch = 0.2f;
+    spellBook->motion.HeadSpeedYaw = 0.09f;
+    spellBook->motion.HeadSpeedPitch = 0.09f;
 
     if ((spellBook->strategy.GameState == STATE_READY || spellBook->strategy.GameState == STATE_PLAYING) && !onStart)
     {
@@ -49,34 +55,44 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
 
         if(!spellBook->perception.vision.ball.BallDetected) {
             spellBook->motion.Vx = 0.0;
-            spellBook->motion.HeadPitch = Deg2Rad(12);
+            spellBook->motion.HeadPitch = Deg2Rad(HEAD_PITCH);
             
-            if(ciclos <= 5) {
+            if(cicles <= NUM_CICLES) {
                 //Procurar a Bola no eixo X
-                if(headAngleX2 == 0 || headAngleX2 <= -20) {
+
+                if(headAngleX1 <= MAX_ANGLE && flag) {
                     spellBook->motion.HeadYaw = Deg2Rad(headAngleX1);
-                    headAngleX1 += 5;
+                    headAngleX1 += 1;
+                    cout << headAngleX1 << "\n";
+                    if(headAngleX1 >= MAX_ANGLE) {
+                        flag = false;
+                    }
                 }
 
-                if(headAngleX1 >= 20) {
+                if(headAngleX2 >= -MAX_ANGLE && !flag) {
                     spellBook->motion.HeadYaw = Deg2Rad(headAngleX2);
-                    headAngleX2 -= 5;
+                    headAngleX2 -= 1;
+                    cout << headAngleX1 << "\n";
+                    if(headAngleX1 <= -MAX_ANGLE) {
+                        flag = true;
+                    }
                 }
-                ciclos++;
+                
+                cicles++;
             } else {
                 //Gira o NAO em torno do próprio eixo para procurar atrás
+                spellBook->motion.HeadYaw = Deg2Rad(0);
                 spellBook->motion.Vth = 0.5;
-                ciclos = 0;
+                cicles = 0;
             }
             
 
         } else {
-            // Anda em linha reta e reseta os ângulos da cabeça
-            /*
+            // Anda em linha reta e reseta os ângulos da cabeça 
             spellBook->motion.Vx = 0.15;
-            spellBook->motion.HeadPitch = Deg2Rad(12);
+            spellBook->motion.Vth = 0;
+            spellBook->motion.HeadPitch = Deg2Rad(HEAD_PITCH);
             spellBook->motion.HeadYaw = Deg2Rad(0);
-            */
         }
 
         
@@ -84,44 +100,7 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
         /*
         Os slides do trainee falam que o robô vai ser testado com a bola em distância curta, média, longa e atrás dele, teóricamente esse código cobre tudo isso, vamo testando e arrumando até ir
         */
-
-    /*
-        //Se enxergar a bola
-        if(spellBook->perception.vision.ball.BallDetected){
-            //Enquanto a distancia do robô até a bola for maior do 0 (provavelmente vamos ter que mudar de 0 para compensar o fato de a medição ser feita a partir da câmera na cabeça dele)
-            while(spellBook->perception.vision.ball.BallDistance > 0) {
-                //O Samuel tinha citado algo sobre desacelerar o NAO, provavelmente teremos que diminuir a velocidade baseado na distancia da bola
-                // spellBook->motion.Vx = (spellBook->perception.vision.ball.BallDistance * algum_fator)
-
-                spellBook->motion.Vx = 0.15;
-            }
-            spellBook->motion.Vx = 0;
-        } else {
-            // Se não enxegar a bola vai procurar mais perto, ou mais longe 
-
-            //Aumenta o ângulo da cabeça pra baixo, se achar a bola para
-            for(float i = 0; i <= 24.0; i += 0.5) {
-                spellBook->motion.HeadPitch = Deg2Rad(i);
-                if(spellBook->perception.vision.ball.BallDetected)
-                    break;
-            }
-            //Aumenta o ângulo da cabeça pra cima, se achar a bola para
-            for(float i = 0; i >= -24.0; i -= 0.5) {
-                spellBook->motion.HeadPitch = Deg2Rad(i);
-                if(spellBook->perception.vision.ball.BallDetected)
-                    break;
-            }
-
-            //Se não encontrar vai procurar em volta
-
-            spellBook->motion.HeadPitch = Deg2Rad(0); // Zerando o angulo da cabeça, acho que vamos ter que colocar um ãngulo melhor depois
-            while(!spellBook->perception.vision.ball.BallDetected){
-                spellBook->motion.Vth = Deg2Rad(25); //Velocidade arbitrária, vamos testar uma mais otimizada.
-            }
-        }
-        */
         
-
         // informacoes disponiveis:
             //spellBook->motion.Vth = Deg2Rad(0); // SETA A VELOCIDADE ANGULAR PARA 0 GRAUS
             //spellBook->motion.Vx = 0; // SETA A VELOCIDADE LINEAR PARA 0 m/s (NAO COLOQUE MAIS QUE 0.2m/s!!!)
