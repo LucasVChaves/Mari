@@ -5,6 +5,7 @@
 #include "Core/Utils/CartesianCoord.h"
 
 float headAngleX1 = 0, headAngleX2 = 0;
+int ciclos = 0;
 
 TraineeRole2::TraineeRole2(SpellBook *spellBook) : Role(spellBook)
 {
@@ -50,13 +51,21 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
             spellBook->motion.Vx = 0.0;
             spellBook->motion.HeadPitch = Deg2Rad(12);
             
-            //Procurar a Bola no eixo X
-            spellBook->motion.HeadYaw = Deg2Rad(headAngleX1);
-            headAngleX1 += 5;
+            if(ciclos <= 5) {
+                //Procurar a Bola no eixo X
+                if(headAngleX2 == 0 || headAngleX2 <= -20) {
+                    spellBook->motion.HeadYaw = Deg2Rad(headAngleX1);
+                    headAngleX1 += 5;
+                }
 
-            if(headAngleX1 >= 20) {
-                spellBook->motion.HeadYaw = Deg2Rad(headAngleX2);
-                headAngleX2 -= 5;
+                if(headAngleX1 >= 20) {
+                    spellBook->motion.HeadYaw = Deg2Rad(headAngleX2);
+                    headAngleX2 -= 5;
+                }
+                ciclos++;
+            } else {
+                //Gira o NAO em torno do próprio eixo para procurar atrás
+                spellBook->motion.Vth = 0.5;
             }
             
 
