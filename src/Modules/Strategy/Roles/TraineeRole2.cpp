@@ -66,7 +66,7 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
             spellBook->motion.Vx = 0.0;
             spellBook->motion.HeadPitch = Deg2Rad(HEAD_PITCH);
             
-            if(cicles <= 2000) {
+            if(cicles <= 200) {
                 //Procurar a Bola no eixo X
                 cicles++;
                 if(headAngleX1 <= MAX_ANGLE && flag) {
@@ -87,15 +87,14 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
                     }
                 }
                 
-            } else if(cicles <= 4000){
+            } else if(cicles <= 400){
                 cicles++;
                 tempoAndando += 0.2;
                 spellBook->motion.Vx = 0.15;
-                if(tempoAndando >= 10) {
+                if(tempoAndando >= 100) {
                     spellBook->motion.Vx = 0.0;
                     tempoAndando = 0;
-                    break;
-                }
+                }   
             } else {
                 //Gira o NAO em torno do próprio eixo para procurar atrás
                 spellBook->motion.HeadYaw = Deg2Rad(0);
