@@ -5,12 +5,12 @@
 #include "Core/Utils/CartesianCoord.h"
 
 #define MAX_ANGLE 12
-#define HEAD_PITCH 15
-#define NUM_CICLES 2000
+#define HEAD_PITCH 13
 
 float headAngleX1 = 0, headAngleX2 = 0;
 int cicles = 0;
-bool flag = true;
+bool flag = true, viuABola = false;
+int tempoVendoBola = 0, tempoAndando = 0;
 
 
 TraineeRole2::TraineeRole2(SpellBook *spellBook) : Role(spellBook)
@@ -53,13 +53,22 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
     {
         cout << "na role trainee2, " << endl;
 
-        if(!spellBook->perception.vision.ball.BallDetected) {
+        if(spellBook->perception.vision.ball.BallDetected){
+            tempoVendoBola++;
+            if(tempoVendoBola >= 8) {
+                viuABola = true;
+            }
+        } else {
+            tempoVendoBola = 0;
+        }
+
+        if(!viuABola) {
             spellBook->motion.Vx = 0.0;
             spellBook->motion.HeadPitch = Deg2Rad(HEAD_PITCH);
             
-            if(cicles <= NUM_CICLES) {
+            if(cicles <= 2000) {
                 //Procurar a Bola no eixo X
-
+                cicles++;
                 if(headAngleX1 <= MAX_ANGLE && flag) {
                     spellBook->motion.HeadYaw = Deg2Rad(headAngleX1);
                     headAngleX1 += 1;
@@ -78,14 +87,21 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
                     }
                 }
                 
+            } else if(cicles <= 4000){
                 cicles++;
+                tempoAndando += 0.2;
+                spellBook->motion.Vx = 0.15;
+                if(tempoAndando >= 10) {
+                    spellBook->motion.Vx = 0.0;
+                    tempoAndando = 0;
+                    break;
+                }
             } else {
                 //Gira o NAO em torno do próprio eixo para procurar atrás
                 spellBook->motion.HeadYaw = Deg2Rad(0);
-                spellBook->motion.Vth = 0.5;
+                spellBook->motion.Vth = 0.3;
                 cicles = 0;
             }
-            
 
         } else {
             // Anda em linha reta e reseta os ângulos da cabeça 
@@ -93,6 +109,7 @@ void TraineeRole2::Tick(float ellapsedTime, const SensorValues &sensor)
             spellBook->motion.Vth = 0;
             spellBook->motion.HeadPitch = Deg2Rad(HEAD_PITCH);
             spellBook->motion.HeadYaw = Deg2Rad(0);
+            cicles = 0;
         }
 
         
